@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,7 @@ package ohos.multimedia.camera
 import ohos.labels.APILevel
 import ohos.business_exception.{BusinessException, ERR_PARAMETER_ERROR}
 import ohos.callback_invoke.{Callback1Argument, CallbackObject}
-import ohos.ffi.{RemoteDataLite, releaseFFIData, Callback1Param, SUCCESS_CODE}
+import ohos.ffi.{RemoteDataLite, releaseFFIData, Callback1Param, SUCCESS_CODE, CArrI32}
 import std.collection.ArrayList
 import std.sync.Mutex
 
@@ -335,6 +335,46 @@ public class CameraManager <: RemoteDataLite {
                 successOrThrow(errCode)
             }
             return VideoOutput(videoOutputId)
+        }
+    }
+
+    /**
+     * Creates a **MetadataOutput** instance. This API returns the result synchronously.
+     *
+     * @param { Array<MetadataObjectType> } metadataObjectTypes - Metadata object types, which are obtained through
+     *     **getSupportedOutputCapability**.
+     * @returns { MetadataOutput } **MetadataOutput** instance created. If the operation fails, an error code defined in
+     *     **CameraErrorCode** is returned.
+     * @throws { BusinessException } 7400101 - Parameter missing or parameter type incorrect.
+     * @throws { BusinessException } 7400201 - Camera service fatal error.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core",
+        throwexception: true
+    ]
+    public func createMetadataOutput(metadataObjectTypes: Array<MetadataObjectType>): MetadataOutput {
+        unsafe {
+            let size = metadataObjectTypes.size
+            let ptr = LibC.malloc<Int32>(count: Int64(size))
+            for (i in 0..size) {
+                let typeValue: Int32 = match (metadataObjectTypes[i]) {
+                    case FaceDetection => 0
+                    case HumanBody => 1
+                    case CatFace => 2
+                    case CatBody => 3
+                    case DogFace => 4
+                    case DogBody => 5
+                    case _ => -1
+                }
+                ptr.write(i, typeValue)
+            }
+            let typesArrI32 = CArrI32(ptr, Int64(size))
+            var errCode: Int32 = 0
+            let metadataOutputId = FfiCameraManagerCreateMetadataOutput(typesArrI32, inout errCode)
+            LibC.free(ptr)
+            successOrThrow(errCode)
+            return MetadataOutput(metadataOutputId)
         }
     }
 

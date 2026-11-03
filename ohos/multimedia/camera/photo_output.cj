@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import ohos.labels.APILevel
 import ohos.business_exception.{BusinessException, ERR_PARAMETER_ERROR}
 import ohos.callback_invoke.{CallbackObject, Callback0Argument, Callback1Argument}
 import ohos.ffi.{RemoteDataLite, releaseFFIData, Callback0Param, Callback1Param, SUCCESS_CODE}
+import ohos.multimedia.image.*
 import std.collection.ArrayList
 import std.sync.Mutex
 
@@ -46,6 +47,8 @@ public class PhotoOutput <: RemoteDataLite & CameraOutput {
     let estimatedCaptureDurationMutex = Mutex()
     let errorList = ArrayList<(CallbackObject, Int64)>()
     let errorMutex = Mutex()
+    let photoAvailableList = ArrayList<(CallbackObject, Int64)>()
+    let photoAvailableMutex = Mutex()
 
     init(id: Int64) {
         super(id)
@@ -661,5 +664,64 @@ public class PhotoOutput <: RemoteDataLite & CameraOutput {
         let cImageRotation = unsafe { FfiCameraPhotoOutputGetPhotoRotation(getID(), deviceDegree, inout errCode) }
         successOrThrow(errCode)
         return ImageRotation.parse(cImageRotation)
+    }
+
+    /**
+     * Subscribes photo available event callback.
+     *
+     * @param { Callback1Argument<Photo> } callback - Callback used to get the Photo.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func onPhotoAvailable(callback: Callback1Argument<Photo>): Unit {
+        synchronized(photoAvailableMutex) {
+            let callbackList = photoAvailableList
+            if (findCallbackObject(callbackList, callback)) {
+                return
+            }
+            unsafe {
+                let wrapper = {id: Int64 => callback.invoke(None, Photo(Image(id)))}
+                let lambdaData = Callback1Param<Int64, Unit>(wrapper)
+                let errCode = FfiCameraPhotoOutputOnPhotoAvailable(getID(), lambdaData.getID())
+                successOrThrow(errCode)
+                callbackList.add((callback, lambdaData.getID()))
+            }
+        }
+    }
+
+    /**
+     * Unsubscribes photo available event callback.
+     *
+     * @param { ?Callback1Argument<Photo> } [callback] - Callback used to get the Photo. If this parameter is not
+     *     specified, all **onPhotoAvailable** callbacks are unsubscribed.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func offPhotoAvailable(callback!: ?Callback1Argument<Photo> = None): Unit {
+        synchronized(photoAvailableMutex) {
+            if (let Some(cb) <- callback) {
+                removePhotoAvailableCallback(cb)
+            } else {
+                let errCode = unsafe { FfiCameraPhotoOutputOffAllPhotoAvailable(getID()) }
+                successOrThrow(errCode)
+                photoAvailableList.clear()
+            }
+        }
+    }
+
+    private func removePhotoAvailableCallback(callback: CallbackObject): Unit {
+        for (idx in 0..photoAvailableList.size) {
+            let item = photoAvailableList[idx]
+            if (refEq(callback, item[0])) {
+                let errCode = unsafe { FfiCameraPhotoOutputOffPhotoAvailable(getID(), item[1]) }
+                successOrThrow(errCode)
+                photoAvailableList.remove(at: idx)
+                return
+            }
+        }
     }
 }

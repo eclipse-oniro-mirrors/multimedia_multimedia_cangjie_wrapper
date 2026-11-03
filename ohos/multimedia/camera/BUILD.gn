@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Huawei Device Co., Ltd.
+# Copyright (c) 2025-2026 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -29,11 +29,16 @@ ohos_cangjie_shared_library("ohos.multimedia.camera") {
       "camera_manager.cj",
       "camera_output.cj",
       "camera_session.cj",
+      "metadata_object.cj",
+      "metadata_output.cj",
+      "photo.cj",
       "photo_output.cj",
       "preview_output.cj",
       "video_output.cj",
     ]
   }
+
+  cj_deps = [ "../../multimedia/image:ohos.multimedia.image" ]
 
   cj_external_deps = [
     "ability_cangjie_wrapper:ohos.app.ability.ui_ability",

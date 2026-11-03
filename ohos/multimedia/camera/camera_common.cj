@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -169,7 +169,19 @@ public class Rect {
     ]
     public var height: Float64
 
-    init(topLeftX: Float64, topLeftY: Float64, width: Float64, height: Float64) {
+    /**
+     * Rect constructor.
+     *
+     * @param { Float64 } topLeftX - X coordinator of top left point.
+     * @param { Float64 } topLeftY - Y coordinator of top left point.
+     * @param { Float64 } width - Width of this rectangle.
+     * @param { Float64 } height - Height of this rectangle.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public init(topLeftX: Float64, topLeftY: Float64, width: Float64, height: Float64) {
         this.topLeftX = topLeftX
         this.topLeftY = topLeftY
         this.width = width
@@ -1853,3 +1865,4 @@ struct IdClassInfo {
         this.className = className
     }
 }
+

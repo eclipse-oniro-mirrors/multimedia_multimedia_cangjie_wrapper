@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -90,7 +90,7 @@ foreign {
 
     func FfiCameraMetadataOutputStop(id: Int64): Int32
 
-    func FfiCameraMetadataOutputOnMetadataObjectsAvailable(id: Int64, callbackId: Int64): Int32
+    func FfiCameraMetadataOutputOnMetadataObjectsAvailableV2(id: Int64, callbackId: Int64): Int32
 
     func FfiCameraMetadataOutputOffMetadataObjectsAvailable(id: Int64, callbackId: Int64): Int32
 
@@ -295,6 +295,12 @@ foreign {
     func FfiCameraOffAllSmoothZoomInfoAvailable(id: Int64, errCode: CPointer<Int32>): Unit
 
     func FfiCameraFree(p: CPointer<Unit>): Unit
+
+    func FfiCameraPhotoOutputOnPhotoAvailable(id: Int64, callbackId: Int64): Int32
+
+    func FfiCameraPhotoOutputOffPhotoAvailable(id: Int64, callbackId: Int64): Int32
+
+    func FfiCameraPhotoOutputOffAllPhotoAvailable(id: Int64): Int32
 }
 
 @C
@@ -611,5 +617,56 @@ struct CCaptureEndInfo {
 
     func toCaptureEndInfo() {
         return CaptureEndInfo(captureId, frameCount)
+    }
+}
+
+@C
+struct CRect {
+    CRect(
+        let topLeftX: Float64,
+        let topLeftY: Float64,
+        let width: Float64,
+        let height: Float64
+    ) {}
+
+    func toRect(): Rect {
+        return Rect(topLeftX, topLeftY, width, height)
+    }
+}
+
+@C
+struct CMetadataObject {
+    CMetadataObject(
+        let `type`: Int32,
+        let timestamp: Int64,
+        let boundingBox: CRect
+    ) {}
+
+    func toMetadataObject(): MetadataObject {
+        return MetadataObject(MetadataObjectType.parse(`type`), timestamp, boundingBox.toRect())
+    }
+}
+
+@C
+struct CArrCMetadataObject {
+    CArrCMetadataObject(
+        let head: CPointer<CMetadataObject>,
+        let size: Int64
+    ) {}
+
+    func toArray(): Array<MetadataObject> {
+        // Only face detection objects are delivered to the callback; silently skip the others.
+        let arr = ArrayList<MetadataObject>()
+        for (i in 0..size) {
+            let obj = unsafe { head.read(i) }
+            try {
+                MetadataObjectType.parse(obj.`type`)
+            } catch (e: Exception) {
+                CAMERA_LOG.error("The MetadataObjectType parse failed.")
+                continue
+            }
+            arr.add(obj.toMetadataObject())
+        }
+        return arr.toArray()
     }
 }

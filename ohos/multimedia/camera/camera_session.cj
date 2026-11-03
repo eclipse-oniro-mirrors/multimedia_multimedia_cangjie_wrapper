@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2025-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -261,11 +261,15 @@ public interface Session {
  * @throws { BusinessException } 7400101 - Parameter error.
  */
 func getCameraOutputId(cameraOutput: CameraOutput): Int64 {
-    (cameraOutput as RemoteDataLite)?.getID() ?? throw BusinessException(7400101, "Parameter error.")
+    match (cameraOutput) {
+        case v: MetadataOutput => return v.getID()
+        case _ => (cameraOutput as RemoteDataLite)?.getID() ?? throw BusinessException(7400101, "Parameter error.")
+    }
 }
 
 func getCameraOutputType(cameraOutput: CameraOutput): Int32 {
     match (cameraOutput) {
+        case v: MetadataOutput => return 0
         case v: PhotoOutput => return 1
         case v: PreviewOutput => return 2
         case v: VideoOutput => return 3
