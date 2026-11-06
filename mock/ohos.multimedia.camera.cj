@@ -22,6 +22,7 @@ import ohos.graphics.color_space_manager.ColorSpace
 import ohos.labels.*
 import ohos.labels.APILevel
 import ohos.ffi.*
+import ohos.multimedia.image
 
 @!APILevel[
     since: "22",
@@ -778,6 +779,25 @@ public class Rect {
         this.topLeftY = 0.0
         this.width = 0.0
         this.height = 0.0
+    }
+
+    /**
+     * Rect constructor.
+     *
+     * @param { Float64 } topLeftX - X coordinator of top left point.
+     * @param { Float64 } topLeftY - Y coordinator of top left point.
+     * @param { Float64 } width - Width of this rectangle.
+     * @param { Float64 } height - Height of this rectangle.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public init(topLeftX: Float64, topLeftY: Float64, width: Float64, height: Float64) {
+        this.topLeftX = topLeftX
+        this.topLeftY = topLeftY
+        this.width = width
+        this.height = height
     }
 }
 
@@ -2258,6 +2278,25 @@ public class CameraManager {
         return VideoOutput()
     }
 
+    /**
+     * Creates a **MetadataOutput** instance. This API returns the result synchronously.
+     *
+     * @param { Array<MetadataObjectType> } metadataObjectTypes - Metadata object types, which are obtained through
+     *     **getSupportedOutputCapability**.
+     * @returns { MetadataOutput } **MetadataOutput** instance created. If the operation fails, an error code defined in
+     *     **CameraErrorCode** is returned.
+     * @throws { BusinessException } 7400101 - Parameter missing or parameter type incorrect.
+     * @throws { BusinessException } 7400201 - Camera service fatal error.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core",
+        throwexception: true
+    ]
+    public func createMetadataOutput(metadataObjectTypes: Array<MetadataObjectType>): MetadataOutput {
+        return MetadataOutput()
+    }
+
     @!APILevel[
         since: "22",
         syscap: "SystemCapability.Multimedia.Camera.Core",
@@ -2890,6 +2929,33 @@ public class PhotoOutput <: CameraOutput {
         return ImageRotation.Rotation0
     }
 
+    /**
+     * Subscribes photo available event callback.
+     *
+     * @param { Callback1Argument<Photo> } callback - Callback used to get the Photo.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func onPhotoAvailable(callback: Callback1Argument<Photo>): Unit {
+        return ()
+    }
+
+    /**
+     * Unsubscribes photo available event callback.
+     *
+     * @param { ?Callback1Argument<Photo> } [callback] - Callback used to get the Photo. If this parameter is not
+     *     specified, all **onPhotoAvailable** callbacks are unsubscribed.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func offPhotoAvailable(callback!: ?Callback1Argument<Photo> = None): Unit {
+        return ()
+    }
+
     @!APILevel[
         since: "22",
         syscap: "SystemCapability.Multimedia.Camera.Core",
@@ -3117,5 +3183,238 @@ public class VideoOutput <: CameraOutput {
     
     public init() {
         super()
+    }
+}
+
+/**
+ * Photo defines a full-quality image object.
+ */
+@!APILevel[
+    since: "26.1.0",
+    syscap: "SystemCapability.Multimedia.Camera.Core"
+]
+public class Photo {
+    init(mainImage: image.Image) {
+    }
+
+    /**
+     * Full-quality image.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public mut prop mainImage: ImageType {
+        get() {
+            ImageType.ImageValue(image.Image())
+        }
+        set(v) {
+        }
+    }
+}
+
+/**
+ * Defines the image container type, which is used to obtain full-quality images or uncompressed images (YUV).
+ */
+@!APILevel[
+    since: "26.1.0",
+    syscap: "SystemCapability.Multimedia.Camera.Core"
+]
+public enum ImageType {
+    /**
+     * Image container type that obtains full-quality images.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    ImageValue(image.Image)
+    | ...
+}
+
+extend ImageType <: ToString {
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func toString(): String {
+        return String()
+    }
+}
+
+extend ImageType <: Equatable<ImageType> {
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public operator func ==(other: ImageType): Bool {
+        return true
+    }
+
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public operator func !=(other: ImageType): Bool {
+        return true
+    }
+}
+
+/**
+ * Describes the camera metadata, which is the data source of **CameraInput**. The metadata is obtained through
+ * **MetadataOutput.onMetadataObjectsAvailable**.
+ */
+@!APILevel[
+    since: "26.1.0",
+    syscap: "SystemCapability.Multimedia.Camera.Core"
+]
+public open class MetadataObject {
+    /**
+     * Metadata object type.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public prop metadataObjectType: MetadataObjectType {
+        get() {
+            return MetadataObjectType.FaceDetection
+        }
+    }
+
+    /**
+     * Timestamp, in ns.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public prop timestamp: Int64 {
+        get() {
+            return 0
+        }
+    }
+
+    /**
+     * Metadata rectangle.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public prop boundingBox: Rect {
+        get() {
+            return Rect(0.0, 0.0, 0.0, 0.0)
+        }
+    }
+}
+
+/**
+ * MetadataOutput implements metadata streams. It inherits from **CameraOutput**.
+ */
+@!APILevel[
+    since: "26.1.0",
+    syscap: "SystemCapability.Multimedia.Camera.Core"
+]
+public class MetadataOutput <: CameraOutput {
+    /**
+     * Starts to output metadata. This API uses an asynchronous callback to return the result.
+     *
+     * @param { AsyncCallback<Unit> } callback - Callback used to return the result. If the metadata output starts
+     *     successfully, **err** is **undefined**; otherwise, **err** is an error object with an error code defined in
+     *     **CameraErrorCode**.
+     * @throws { BusinessException } 7400103 - Session not config.
+     * @throws { BusinessException } 7400201 - Camera service fatal error.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core",
+        throwexception: true
+    ]
+    public func start(callback: AsyncCallback<Unit>): Unit {
+        callback(None, Some(()))
+    }
+
+    /**
+     * Stops outputting metadata. This API uses an asynchronous callback to return the result.
+     *
+     * @param { AsyncCallback<Unit> } callback - Callback used to return the result. If the metadata output stops
+     *     successfully, **err** is **undefined**; otherwise, **err** is an error object.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func stop(callback: AsyncCallback<Unit>): Unit {
+        callback(None, Some(()))
+    }
+
+    /**
+     * Releases output resources.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core",
+        throwexception: true,
+        workerthread: true
+    ]
+    public func release(): Unit {
+        return ()
+    }
+
+    /**
+     * Subscribes to metadata objects available event callback.
+     *
+     * @param { Callback1Argument<Array<MetadataObject>> } callback - Callback used to get the available metadata
+     *     objects.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func onMetadataObjectsAvailable(callback: Callback1Argument<Array<MetadataObject>>): Unit {
+        return ()
+    }
+
+    /**
+     * Unsubscribes from metadata objects available event callback.
+     *
+     * @param { ?Callback1Argument<Array<MetadataObject>> } [callback] - Callback used to get the available metadata
+     *     objects. If this parameter is not specified, all **onMetadataObjectsAvailable** callbacks are
+     *     unsubscribed.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func offMetadataObjectsAvailable(callback!: ?Callback1Argument<Array<MetadataObject>> = None): Unit {
+        return ()
+    }
+
+    /**
+     * Subscribes to error events.
+     *
+     * @param { Callback0Argument } callback - Callback used to get the metadata output errors.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func onError(callback: Callback0Argument): Unit {
+        return ()
+    }
+
+    /**
+     * Unsubscribes from error events.
+     *
+     * @param { ?Callback0Argument } [callback] - Callback used to get the metadata output errors. If this parameter
+     *     is not specified, all **onError** callbacks are unsubscribed.
+     */
+    @!APILevel[
+        since: "26.1.0",
+        syscap: "SystemCapability.Multimedia.Camera.Core"
+    ]
+    public func offError(callback!: ?Callback0Argument = None): Unit {
+        return ()
     }
 }
