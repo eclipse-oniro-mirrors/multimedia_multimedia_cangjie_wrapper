@@ -57,8 +57,8 @@ public class MetadataOutput <: CameraOutput {
         throwexception: true
     ]
     public func start(callback: AsyncCallback<Unit>): Unit {
-        let errCode = unsafe { FfiCameraMetadataOutputStart(metadataOutputImpl.getId()) }
         spawn {
+            let errCode = unsafe { FfiCameraMetadataOutputStart(metadataOutputImpl.getId()) }
             if (errCode == SUCCESS_CODE) {
                 callback(None, Some(()))
             } else {
@@ -78,22 +78,22 @@ public class MetadataOutput <: CameraOutput {
         syscap: "SystemCapability.Multimedia.Camera.Core"
     ]
     public func stop(callback: AsyncCallback<Unit>): Unit {
-        let errCode = unsafe { FfiCameraMetadataOutputStop(metadataOutputImpl.getId()) }
         spawn {
-            if (errCode == SUCCESS_CODE) {
-                callback(None, Some(()))
-            } else {
-                callback(Some(BusinessException(errCode, getErrorMsg(errCode))), None)
-            }
+            unsafe { FfiCameraMetadataOutputStop(metadataOutputImpl.getId()) }
+            callback(None, Some(()))
         }
     }
 
     /**
      * Releases output resources.
+     *
+     * @throws { BusinessException } 7400201 - Camera service fatal error.
      */
     @!APILevel[
         since: "26.1.0",
-        syscap: "SystemCapability.Multimedia.Camera.Core"
+        syscap: "SystemCapability.Multimedia.Camera.Core",
+        throwexception: true,
+        workerthread: true
     ]
     public func release(): Unit {
         let errCode = unsafe { FfiCameraMetadataOutputRelease(metadataOutputImpl.getId()) }
