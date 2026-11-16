@@ -3351,6 +3351,8 @@ public class MetadataOutput <: CameraOutput {
 
     /**
      * Releases output resources.
+     *
+     * @throws { BusinessException } 7400201 - Camera service fatal error.
      */
     @!APILevel[
         since: "26.1.0",
